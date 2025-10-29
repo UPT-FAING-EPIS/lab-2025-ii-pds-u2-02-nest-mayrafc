@@ -1,4 +1,4 @@
-name: Actividad02 - Paquetes NPM y pruebas
+name: Publish NuGet Package
 
 on:
   push:
