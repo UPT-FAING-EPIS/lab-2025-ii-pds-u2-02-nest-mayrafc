@@ -1,4 +1,4 @@
-name: 🧪 Build, Test, Analyze and Publish Packages
+name: Build, Test, Analyze, and Publish Packages
 
 on:
   push:
@@ -11,50 +11,38 @@ jobs:
   build-test-analyze-publish:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      packages: write
-
     steps:
-      # 1️⃣ Clonar el repositorio
-      - name: 🧾 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Configurar Node.js con acceso a GitHub Packages
-      - name: 🧩 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: '20'
 
       # ---------------------
       # 🔹 CUSTOMER-APP
       # ---------------------
-      - name: 📦 Install dependencies (customer-app)
-        run: npm ci
+      - name: Install dependencies (customer-app)
+        run: npm install
         working-directory: ./customer-app
 
-      - name: 🧪 Run tests (customer-app)
+      - name: Run tests (customer-app)
         run: npm run test:cov
         working-directory: ./customer-app
 
-      - name: 🚨 SonarCloud Scan (customer-app)
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+      - name: SonarCloud Scan (customer-app)
+        uses: SonarSource/sonarcloud-github-action@v3
         with:
+          projectBaseDir: ./customer-app
           args: >
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
-            -Dsonar.projectName=customer-app
-            -Dsonar.projectBaseDir=./customer-app
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.spec.ts
-            -Dsonar.exclusions=**/*.spec.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🏗️ Build and Publish (customer-app)
+      - name: Build and Publish (customer-app)
         run: |
           npm run build
           npm version patch --no-git-tag-version
@@ -62,43 +50,32 @@ jobs:
           npm pkg set name="@mayrafc/customer-app_chire"
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
           npm config set registry "https://npm.pkg.github.com/"
-          npm config list
           npm publish --access public
-        shell: /usr/bin/bash -e {0}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: ./customer-app
 
       # ---------------------
       # 🔹 NOTIFICATIONS
       # ---------------------
-      - name: 📦 Install dependencies (notifications)
-        run: npm ci
+      - name: Install dependencies (notifications)
+        run: npm install
         working-directory: ./notifications
 
-      - name: 🧪 Run tests (notifications)
+      - name: Run tests (notifications)
         run: npm run test:cov
         working-directory: ./notifications
 
-      - name: 🚨 SonarCloud Scan (notifications)
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+      - name: SonarCloud Scan (notifications)
+        uses: SonarSource/sonarcloud-github-action@v3
         with:
+          projectBaseDir: ./notifications
           args: >
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
-            -Dsonar.projectName=notifications
-            -Dsonar.projectBaseDir=./notifications
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.spec.ts
-            -Dsonar.exclusions=**/*.spec.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🏗️ Build and Publish (notifications)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Publish (notifications)
         run: |
           npm run build
           npm version patch --no-git-tag-version
