@@ -18,9 +18,11 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
+        working-directory: customer-app
         run: npm ci
 
       - name: Build the package
+        working-directory: customer-app
         run: npm run build
 
       - name: Create Release
@@ -32,6 +34,6 @@ jobs:
           body: |
             Release notes for version ${{ github.ref }}
           files: |
-            path/to/your/package.zip
+            customer-app/dist/**/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
