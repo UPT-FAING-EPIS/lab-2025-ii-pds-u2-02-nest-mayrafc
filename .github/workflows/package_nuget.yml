@@ -13,6 +13,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      
+# This workflow handles nuget publishing
 
     steps:
       - name: Checkout repository
