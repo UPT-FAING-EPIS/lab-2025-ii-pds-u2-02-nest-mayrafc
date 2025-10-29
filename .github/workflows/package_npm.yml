@@ -48,10 +48,12 @@ jobs:
           npm run build
           npm version patch --no-git-tag-version
           npm pkg delete private
+          npm pkg set name="@proyectou/customer-app_may"
           npm config set registry "https://npm.pkg.github.com/"
           npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
           npm publish --access public --registry=https://npm.pkg.github.com/
         working-directory: ./customer-app
+
 
 
       # ---------------------
@@ -82,8 +84,10 @@ jobs:
           npm run build
           npm version patch --no-git-tag-version
           npm pkg delete private
+          npm pkg set name="@proyectou/notifications_may"
           npm config set registry "https://npm.pkg.github.com/"
           npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
           npm publish --access public --registry=https://npm.pkg.github.com/
         working-directory: ./notifications
+
 
