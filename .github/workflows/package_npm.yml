@@ -1,0 +1,81 @@
+name: 🧪 Build, Test, Analyze and Publish Packages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test-analyze-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🧩 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ---------------------
+      # 🔹 CUSTOMER-APP
+      # ---------------------
+      - name: 📦 Install dependencies (customer-app)
+        run: npm install
+        working-directory: ./customer-app
+
+      - name: 🧪 Run tests (customer-app)
+        run: npm run test:cov
+        working-directory: ./customer-app
+
+      - name: 🚨 SonarCloud Scan (customer-app)
+        uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: ./customer-app
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: proyectou_lab2nest
+          SONAR_ORGANIZATION: proyectou
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏗️ Build and Publish (customer-app)
+        run: |
+          npm run build
+          npm version patch --no-git-tag-version
+          npm config set registry "https://npm.pkg.github.com/"
+          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          npm publish --access public --registry=https://npm.pkg.github.com/
+        working-directory: ./customer-app
+
+      # ---------------------
+      # 🔹 NOTIFICATIONS
+      # ---------------------
+      - name: 📦 Install dependencies (notifications)
+        run: npm install
+        working-directory: ./notifications
+
+      - name: 🧪 Run tests (notifications)
+        run: npm run test:cov
+        working-directory: ./notifications
+
+      - name: 🚨 SonarCloud Scan (notifications)
+        uses: SonarSource/sonarcloud-github-action@v3
+        with:
+          projectBaseDir: ./notifications
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: proyectou_lab2nest
+          SONAR_ORGANIZATION: proyectou
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏗️ Build and Publish (notifications)
+        run: |
+          npm run build
+          npm version patch --no-git-tag-version
+          npm config set registry "https://npm.pkg.github.com/"
+          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
+          npm publish --access public --registry=https://npm.pkg.github.com/
+        working-directory: ./notifications
