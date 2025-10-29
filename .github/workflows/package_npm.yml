@@ -1,18 +1,17 @@
-name: Build, Test, Analyze, and Publish Packages
+name: Actividad02 - Paquetes NPM y pruebas
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-  workflow_dispatch:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '20'
 
 jobs:
-  build-test-analyze-publish:
+  build-and-publish:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     steps:
@@ -22,70 +21,82 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies needed on runner
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       # ---------------------
-      # 🔹 CUSTOMER-APP
+      # 🔹 Notifications
       # ---------------------
-      - name: Install dependencies (customer-app)
-        run: npm install
-        working-directory: ./customer-app
+      - name: Run tests and collect coverage (notifications)
+        working-directory: notifications
+        run: |
+          npm ci || npm install
+          npm run test:cov
 
-      - name: Run tests (customer-app)
-        run: npm run test:cov
-        working-directory: ./customer-app
-
-      - name: SonarCloud Scan (customer-app)
-        uses: SonarSource/sonarcloud-github-action@v3
+      - name: Upload test results (notifications)
+        uses: actions/upload-artifact@v4
         with:
-          projectBaseDir: ./customer-app
+          name: notifications-test-results
+          path: notifications/coverage
+
+      # ---------------------
+      # 🔹 Customer-App
+      # ---------------------
+      - name: Run tests and collect coverage (customer-app)
+        working-directory: customer-app
+        run: |
+          npm ci || npm install
+          npm run test:cov
+
+      - name: Upload test results (customer-app)
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-app-test-results
+          path: customer-app/coverage
+
+      # ---------------------
+      # 🔹 SonarCloud Scan
+      # ---------------------
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectBaseDir: .
           args: >
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Publish (customer-app)
-        run: |
-          npm run build
-          npm version patch --no-git-tag-version
-          npm pkg delete private || true
-          npm pkg set name="@mayrafc/customer-app_chire"
-          # 🔑 Configurar autenticación correctamente
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NUGET }}" > ./customer-app/.npmrc
-          npm publish --access public --registry https://npm.pkg.github.com/
-        working-directory: ./customer-app
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # token necesario, no hay otra forma de autenticar con SonarCloud
 
       # ---------------------
-      # 🔹 NOTIFICATIONS
+      # 🔹 Publish Notifications
       # ---------------------
-      - name: Install dependencies (notifications)
-        run: npm install
-        working-directory: ./notifications
-
-      - name: Run tests (notifications)
-        run: npm run test:cov
-        working-directory: ./notifications
-
-      - name: SonarCloud Scan (notifications)
-        uses: SonarSource/sonarcloud-github-action@v3
-        with:
-          projectBaseDir: ./notifications
-          args: >
-            -Dsonar.organization=proyectou
-            -Dsonar.projectKey=proyectou_lab2nest
+      - name: Prepare and publish notifications package
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        working-directory: notifications
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Publish (notifications)
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm run build
-          npm version patch --no-git-tag-version
-          npm pkg delete private || true
-          npm pkg set name="@mayrafc/notifications_chire"
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NUGET }}" > ./notifications/.npmrc
-          npm publish --access public --registry https://npm.pkg.github.com/
-        working-directory: ./notifications
+          jq '.name = "@${{ github.repository_owner }}/notifications_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
+          mv package.temp.json package.json
+          npm ci || npm install
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          npm publish --access=restricted --registry=https://npm.pkg.github.com/
+
+      # ---------------------
+      # 🔹 Publish Customer-App
+      # ---------------------
+      - name: Prepare and publish customer-app package
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        working-directory: customer-app
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          jq '.name = "@${{ github.repository_owner }}/customer-app_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
+          mv package.temp.json package.json
+          npm ci || npm install
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          npm publish --access=restricted --registry=https://npm.pkg.github.com/
