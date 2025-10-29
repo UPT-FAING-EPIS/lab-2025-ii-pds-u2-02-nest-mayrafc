@@ -1,4 +1,4 @@
-name: 📘 Publish Documentation
+name: 📘 Publish Documentation (Both)
 
 on:
   push:
@@ -19,13 +19,23 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 📦 Install dependencies
+      - name: 📦 Install dependencies (customer-app)
         run: npm install
+        working-directory: ./customer-app
 
-      - name: 🏗️ Generate Compodoc documentation
-        run: npx @compodoc/compodoc -p tsconfig.json -d documentation --disableSourceCode
+      - name: 📦 Install dependencies (notifications)
+        run: npm install
+        working-directory: ./notifications
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: 🏗️ Generate docs (customer-app)
+        run: npx @compodoc/compodoc -p tsconfig.json -d ../../documentation/customer-app --disableSourceCode
+        working-directory: ./customer-app
+
+      - name: 🏗️ Generate docs (notifications)
+        run: npx @compodoc/compodoc -p tsconfig.json -d ../../documentation/notifications --disableSourceCode
+        working-directory: ./notifications
+
+      - name: 🚀 Deploy all docs to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
