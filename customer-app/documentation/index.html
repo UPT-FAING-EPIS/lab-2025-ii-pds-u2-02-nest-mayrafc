@@ -12,10 +12,75 @@
         <link rel="stylesheet" href="./styles/dark.css">
     </head>
     <body>
+          <script>
+               // Blocking script to avoid flickering dark mode
+               // Dark mode toggle button
+               var useDark = window.matchMedia('(prefers-color-scheme: dark)');
+               var darkModeState = useDark.matches;
+               var $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               var $darkModeToggles = document.querySelectorAll('.dark-mode-switch');
+               var darkModeStateLocal = localStorage.getItem('compodoc_darkmode-state');
 
-        <div class="navbar navbar-default navbar-fixed-top visible-xs">
-            <a href="./" class="navbar-brand">customer-app documentation</a>
-            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               function checkToggle(check) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].checked = check;
+                    }
+               }
+
+               function toggleDarkMode(state) {
+                    if (window.localStorage) {
+                         localStorage.setItem('compodoc_darkmode-state', state);
+                    }
+
+                    checkToggle(state);
+
+                    const hasClass = document.body.classList.contains('dark');
+
+                    if (state) {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.add('dark');
+                         }
+                         if (!hasClass) {
+                              document.body.classList.add('dark');
+                         }
+                    } else {
+                         for (var i = 0; i < $darkModeToggles.length; i++) {
+                              $darkModeToggles[i].classList.remove('dark');
+                         }
+                         if (hasClass) {
+                              document.body.classList.remove('dark');
+                         }
+                    }
+               }
+
+               useDark.addEventListener('change', function (evt) {
+                    toggleDarkMode(evt.matches);
+               });
+               if (darkModeStateLocal) {
+                    darkModeState = darkModeStateLocal === 'true';
+               }
+               toggleDarkMode(darkModeState);
+          </script>
+          <script>
+              // --- Iframe navigation tracking for Template Playground ---
+              function sendCurrentUrlToParent() {
+                  if (window.parent && window.parent !== window) {
+                      window.parent.postMessage({
+                          type: 'compodoc-iframe-navigate',
+                          url: window.location.pathname + window.location.hash
+                      }, '*');
+                  }
+              }
+              window.addEventListener('hashchange', sendCurrentUrlToParent, false);
+              window.addEventListener('popstate', sendCurrentUrlToParent, false);
+              window.addEventListener('DOMContentLoaded', sendCurrentUrlToParent, false);
+          </script>
+
+        <div class="navbar navbar-default navbar-fixed-top d-md-none p-0">
+               <div class="d-flex">
+                    <a href="./" class="navbar-brand">customer-app documentation</a>
+                    <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+               </div>
         </div>
 
         <div class="xs-menu menu" id="mobile-menu">
@@ -24,12 +89,13 @@
 
         <div class="container-fluid main">
            <div class="row main">
-               <div class="hidden-xs menu">
+               <div class="d-none d-md-block menu">
                    <compodoc-menu mode="normal"></compodoc-menu>
                </div>
                <!-- START CONTENT -->
-               <div class="content getting-started">
+               <div class="content readme">
                    <div class="content-data">
+
 
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
@@ -51,31 +117,31 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-<h2 id="description">Description</h2>
+<h2>Description</h2>
 <p><a href="https://github.com/nestjs/nest">Nest</a> framework TypeScript starter repository.</p>
-<h2 id="project-setup">Project setup</h2>
-<div><pre class="line-numbers"><code class="language-bash">$ npm install</code></pre></div><h2 id="compile-and-run-the-project">Compile and run the project</h2>
-<div><pre class="line-numbers"><code class="language-bash"># development
+<h2>Project setup</h2>
+<b>Example :</b><div><pre class="line-numbers"><code class="language-bash">$ npm install</code></pre></div><h2>Compile and run the project</h2>
+<b>Example :</b><div><pre class="line-numbers"><code class="language-bash"># development
 $ npm run start
 
 # watch mode
 $ npm run start:dev
 
 # production mode
-$ npm run start:prod</code></pre></div><h2 id="run-tests">Run tests</h2>
-<div><pre class="line-numbers"><code class="language-bash"># unit tests
+$ npm run start:prod</code></pre></div><h2>Run tests</h2>
+<b>Example :</b><div><pre class="line-numbers"><code class="language-bash"># unit tests
 $ npm run test
 
 # e2e tests
 $ npm run test:e2e
 
 # test coverage
-$ npm run test:cov</code></pre></div><h2 id="deployment">Deployment</h2>
+$ npm run test:cov</code></pre></div><h2>Deployment</h2>
 <p>When you&#39;re ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the <a href="https://docs.nestjs.com/deployment">deployment documentation</a> for more information.</p>
 <p>If you are looking for a cloud-based platform to deploy your NestJS application, check out <a href="https://mau.nestjs.com">Mau</a>, our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:</p>
-<div><pre class="line-numbers"><code class="language-bash">$ npm install -g &#64;nestjs/mau
+<b>Example :</b><div><pre class="line-numbers"><code class="language-bash">$ npm install -g &#64;nestjs/mau
 $ mau deploy</code></pre></div><p>With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.</p>
-<h2 id="resources">Resources</h2>
+<h2>Resources</h2>
 <p>Check out a few resources that may come in handy when working with NestJS:</p>
 <ul>
 <li>Visit the <a href="https://docs.nestjs.com">NestJS Documentation</a> to learn more about the framework.</li>
@@ -87,16 +153,19 @@ $ mau deploy</code></pre></div><p>With Mau, you can deploy your application in j
 <li>To stay in the loop and get updates, follow us on <a href="https://x.com/nestframework">X</a> and <a href="https://linkedin.com/company/nestjs">LinkedIn</a>.</li>
 <li>Looking for a job, or have a job to offer? Check out our official <a href="https://jobs.nestjs.com">Jobs board</a>.</li>
 </ul>
-<h2 id="support">Support</h2>
+<h2>Support</h2>
 <p>Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you&#39;d like to join them, please <a href="https://docs.nestjs.com/support">read more here</a>.</p>
-<h2 id="stay-in-touch">Stay in touch</h2>
+<h2>Stay in touch</h2>
 <ul>
 <li>Author - <a href="https://twitter.com/kammysliwiec">Kamil Myśliwiec</a></li>
 <li>Website - <a href="https://nestjs.com/">https://nestjs.com</a></li>
 <li>Twitter - <a href="https://twitter.com/nestframework">@nestframework</a></li>
 </ul>
-<h2 id="license">License</h2>
+<h2>License</h2>
 <p>Nest is <a href="https://github.com/nestjs/nest/blob/master/LICENSE">MIT licensed</a>.</p>
+
+
+
 
 
 
@@ -143,10 +212,23 @@ $ mau deploy</code></pre></div><p>With Mau, you can deploy your application in j
 
        <script>
             var COMPODOC_CURRENT_PAGE_DEPTH = 0;
-            var COMPODOC_CURRENT_PAGE_CONTEXT = 'getting-started';
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'readme';
             var COMPODOC_CURRENT_PAGE_URL = 'index.html';
             var MAX_SEARCH_RESULTS = 15;
        </script>
+
+       <script>
+               $darkModeToggleSwitchers = document.querySelectorAll('.dark-mode-switch input');
+               checkToggle(darkModeState);
+               if ($darkModeToggleSwitchers.length > 0) {
+                    for (var i = 0; i < $darkModeToggleSwitchers.length; i++) {
+                         $darkModeToggleSwitchers[i].addEventListener('change', function (event) {
+                              darkModeState = !darkModeState;
+                              toggleDarkMode(darkModeState);
+                         });
+                    }
+               }
+          </script>
 
        <script src="./js/libs/custom-elements.min.js"></script>
        <script src="./js/libs/lit-html.js"></script>
@@ -159,7 +241,6 @@ $ mau deploy</code></pre></div><p>With Mau, you can deploy your application in j
        <script src="./js/libs/es6-shim.min.js"></script>
        <script src="./js/libs/EventDispatcher.js"></script>
        <script src="./js/libs/promise.min.js"></script>
-       <script src="./js/libs/zepto.min.js"></script>
 
        <script src="./js/compodoc.js"></script>
 
