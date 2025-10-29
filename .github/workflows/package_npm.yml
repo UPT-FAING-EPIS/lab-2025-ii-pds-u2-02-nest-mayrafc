@@ -11,20 +11,27 @@ jobs:
   build-test-analyze-publish:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      packages: write
+
     steps:
+      # 1️⃣ Clonar el repositorio
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Configurar Node.js con acceso a GitHub Packages
       - name: 🧩 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
 
       # ---------------------
       # 🔹 CUSTOMER-APP
       # ---------------------
       - name: 📦 Install dependencies (customer-app)
-        run: npm install
+        run: npm ci
         working-directory: ./customer-app
 
       - name: 🧪 Run tests (customer-app)
@@ -32,35 +39,37 @@ jobs:
         working-directory: ./customer-app
 
       - name: 🚨 SonarCloud Scan (customer-app)
-        uses: SonarSource/sonarcloud-github-action@v3
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         with:
-          projectBaseDir: ./customer-app
           args: >
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
+            -Dsonar.projectName=customer-app
+            -Dsonar.projectBaseDir=./customer-app
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.exclusions=**/*.spec.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
       - name: 🏗️ Build and Publish (customer-app)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run build
           npm version patch --no-git-tag-version
-          npm pkg delete private
-          npm pkg set name="@proyectou/customer-app_may"
-          npm config set registry "https://npm.pkg.github.com/"
-          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
-          npm publish --access public --registry=https://npm.pkg.github.com/
+          npm pkg delete private || true
+          npm pkg set name="@mayrafc/customer-app_chire"
+          npm publish --access public
         working-directory: ./customer-app
-
-
 
       # ---------------------
       # 🔹 NOTIFICATIONS
       # ---------------------
       - name: 📦 Install dependencies (notifications)
-        run: npm install
+        run: npm ci
         working-directory: ./notifications
 
       - name: 🧪 Run tests (notifications)
@@ -68,26 +77,28 @@ jobs:
         working-directory: ./notifications
 
       - name: 🚨 SonarCloud Scan (notifications)
-        uses: SonarSource/sonarcloud-github-action@v3
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         with:
-          projectBaseDir: ./notifications
           args: >
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
+            -Dsonar.projectName=notifications
+            -Dsonar.projectBaseDir=./notifications
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/*.spec.ts
+            -Dsonar.exclusions=**/*.spec.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
       - name: 🏗️ Build and Publish (notifications)
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run build
           npm version patch --no-git-tag-version
-          npm pkg delete private
-          npm pkg set name="@proyectou/notifications_may"
-          npm config set registry "https://npm.pkg.github.com/"
-          npm config set //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
-          npm publish --access public --registry=https://npm.pkg.github.com/
+          npm pkg delete private || true
+          npm pkg set name="@mayrafc/notifications_chire"
+          npm publish --access public
         working-directory: ./notifications
-
-
