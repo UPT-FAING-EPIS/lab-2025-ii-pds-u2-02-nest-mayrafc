@@ -67,7 +67,7 @@ jobs:
             -Dsonar.organization=proyectou
             -Dsonar.projectKey=proyectou_lab2nest
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # token necesario, no hay otra forma de autenticar con SonarCloud
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # ---------------------
       # 🔹 Publish Notifications
@@ -78,7 +78,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          jq '.name = "@${{ github.repository_owner }}/notifications_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
+          # Elimina "private" y cambia nombre y versión
+          jq 'del(.private) | .name = "@${{ github.repository_owner }}/notifications_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
           mv package.temp.json package.json
           npm ci || npm install
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
@@ -94,7 +95,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          jq '.name = "@${{ github.repository_owner }}/customer-app_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
+          jq 'del(.private) | .name = "@${{ github.repository_owner }}/customer-app_chire" | .version = "0.0.0-" + (env.GITHUB_RUN_NUMBER|tostring)' package.json > package.temp.json
           mv package.temp.json package.json
           npm ci || npm install
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
