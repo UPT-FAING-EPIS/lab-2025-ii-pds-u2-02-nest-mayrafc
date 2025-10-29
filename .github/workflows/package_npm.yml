@@ -35,11 +35,13 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v3
         with:
           projectBaseDir: ./customer-app
+          args: >
+            -Dsonar.organization=proyectou
+            -Dsonar.projectKey=proyectou_lab2nest
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: proyectou_lab2nest
-          SONAR_ORGANIZATION: proyectou
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: 🏗️ Build and Publish (customer-app)
         run: |
@@ -65,11 +67,13 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v3
         with:
           projectBaseDir: ./notifications
+          args: >
+            -Dsonar.organization=proyectou
+            -Dsonar.projectKey=proyectou_lab2nest
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: proyectou_lab2nest
-          SONAR_ORGANIZATION: proyectou
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: 🏗️ Build and Publish (notifications)
         run: |
