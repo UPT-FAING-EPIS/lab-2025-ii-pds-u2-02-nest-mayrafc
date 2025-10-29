@@ -55,8 +55,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: 🏗️ Build and Publish (customer-app)
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run build
           npm version patch --no-git-tag-version
@@ -64,7 +62,11 @@ jobs:
           npm pkg set name="@mayrafc/customer-app_chire"
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
           npm config set registry "https://npm.pkg.github.com/"
+          npm config list
           npm publish --access public
+        shell: /usr/bin/bash -e {0}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: ./customer-app
 
       # ---------------------
