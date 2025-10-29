@@ -62,6 +62,8 @@ jobs:
           npm version patch --no-git-tag-version
           npm pkg delete private || true
           npm pkg set name="@mayrafc/customer-app_chire"
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          npm config set registry "https://npm.pkg.github.com/"
           npm publish --access public
         working-directory: ./customer-app
 
@@ -100,5 +102,7 @@ jobs:
           npm version patch --no-git-tag-version
           npm pkg delete private || true
           npm pkg set name="@mayrafc/notifications_chire"
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          npm config set registry "https://npm.pkg.github.com/"
           npm publish --access public
         working-directory: ./notifications
