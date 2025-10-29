@@ -27,6 +27,9 @@
       ],
       "@app/domain/*": [
         "libs/domain/src/*"
+      ],
+      "@angular/*": [
+        "node_modules/@angular/*"
       ]
     }
   }
