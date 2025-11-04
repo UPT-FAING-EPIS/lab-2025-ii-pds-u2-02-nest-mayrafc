@@ -28,14 +28,43 @@ jobs:
         working-directory: ./notifications
 
       - name: 🏗️ Generate docs (customer-app)
-        run: npx @compodoc/compodoc -p tsconfig.json -d ../../documentation/customer-app --disableSourceCode
+        run: npx @compodoc/compodoc -p tsconfig.json -d documentation
         working-directory: ./customer-app
 
       - name: 🏗️ Generate docs (notifications)
-        run: npx @compodoc/compodoc -p tsconfig.json -d ../../documentation/notifications --disableSourceCode
+        run: npx @compodoc/compodoc -p tsconfig.json -d documentation
         working-directory: ./notifications
 
-      - name: 🚀 Deploy all docs to GitHub Pages
+      - name: 🧱 Combine documentation folders
+        run: |
+          mkdir -p documentation
+          if [ -d "notifications/documentation" ]; then
+            mv notifications/documentation documentation/notifications
+          fi
+          if [ -d "customer-app/documentation" ]; then
+            mv customer-app/documentation documentation/customer-app
+          fi
+
+      - name: 🧩 Create index.html
+        run: |
+          cat > documentation/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+              <meta charset="UTF-8">
+              <title>Documentación del Proyecto</title>
+          </head>
+          <body>
+              <h1>📘 Documentación</h1>
+              <ul>
+                  <li><a href="./customer-app/index.html">Customer App</a></li>
+                  <li><a href="./notifications/index.html">Notifications</a></li>
+              </ul>
+          </body>
+          </html>
+          HTML
+
+      - name: 🚀 Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
